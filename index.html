@@ -2,19 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rat Furniture</title>
 
   <style>
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: Arial, sans-serif;
       background: #f2f2f2;
     }
 
     .header {
       background: #111;
-      color: #fff;
+      color: white;
       text-align: center;
       padding: 20px;
     }
@@ -27,11 +27,11 @@
     }
 
     .product {
-      background: #fff;
+      background: white;
       border-radius: 8px;
       padding: 10px;
       text-align: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     .product img {
@@ -51,7 +51,6 @@
       text-decoration: none;
       padding: 10px;
       border-radius: 5px;
-      font-weight: bold;
       margin-top: 6px;
     }
   </style>
@@ -66,7 +65,6 @@
 
   <div class="catalog" id="catalog"></div>
 
-  <!-- Firebase + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import {
@@ -76,7 +74,6 @@
       setDoc
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-    // 🔐 FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
       authDomain: "qr-catalog-65293.firebaseapp.com",
@@ -86,54 +83,44 @@
       appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Firestore document reference
     const catalogRef = doc(db, "catalog", "main");
 
     async function loadCatalog() {
-      try {
-        const snap = await getDoc(catalogRef);
+      const snap = await getDoc(catalogRef);
 
-        // If document does not exist, create it (WITH passkey)
-        if (!snap.exists()) {
-          await setDoc(catalogRef, {
-            passkey: "29876104",
-            shopName: "Rat Furniture",
-            products: [
-              {
-                name: "Wooden Chair",
-                price: "499",
-                img: "https://picsum.photos/300?1"
-              },
-              {
-                name: "Dining Table",
-                price: "799",
-                img: "https://picsum.photos/300?2"
-              }
-            ]
-          });
-        }
-
-        const data = (await getDoc(catalogRef)).data();
-        renderCatalog(data);
-
-      } catch (err) {
-        console.error("Error loading catalog:", err);
-        document.getElementById("shopName").innerText = "Error loading catalog";
+      if (!snap.exists()) {
+        await setDoc(catalogRef, {
+          passkey: "29876104",
+          shopName: "Rat Furniture",
+          products: [
+            {
+              name: "Sofa Set",
+              price: "19999",
+              img: "https://picsum.photos/400?1"
+            },
+            {
+              name: "Wooden Bed",
+              price: "24999",
+              img: "https://picsum.photos/400?2"
+            }
+          ]
+        });
       }
+
+      const data = (await getDoc(catalogRef)).data();
+      renderCatalog(data);
     }
 
     function renderCatalog(data) {
       document.getElementById("shopName").innerText = data.shopName;
-
-      const catalogDiv = document.getElementById("catalog");
-      catalogDiv.innerHTML = "";
+      const catalog = document.getElementById("catalog");
+      catalog.innerHTML = "";
 
       data.products.forEach(p => {
-        catalogDiv.innerHTML += `
+        catalog.innerHTML += `
           <div class="product">
             <img src="${p.img}">
             <h3>${p.name}</h3>
@@ -146,7 +133,6 @@
       });
     }
 
-    // Load catalog from cloud
     loadCatalog();
   </script>
 
