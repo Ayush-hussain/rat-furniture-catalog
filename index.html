@@ -1,204 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rat Furniture Catalogue</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rat Furniture</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+}
 
-    .header {
-      background: #111;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
+.header {
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
 
-    .catalog {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-      padding: 15px;
-    }
+.catalog {
+  padding: 15px;
+}
 
-    .product {
-      background: #fff;
-      border-radius: 8px;
-      padding: 10px;
-      text-align: center;
-    }
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
 
-    .product img {
-      width: 100%;
-      border-radius: 6px;
-    }
+.card img {
+  width: 100%;
+  border-radius: 8px;
+}
 
-    .price {
-      font-weight: bold;
-      margin: 6px 0;
-    }
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
 
-    .btn {
-      display: block;
-      background: #25D366;
-      color: #fff;
-      text-decoration: none;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 6px;
-      font-weight: bold;
-    }
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    .admin {
-      background: #c62828;
-      color: #fff;
-      border: none;
-      padding: 6px;
-      width: 100%;
-      margin-top: 6px;
-      border-radius: 4px;
-    }
+.save {
+  background: #25D366;
+  color: white;
+  margin-top: 8px;
+}
 
-    input {
-      width: 100%;
-      padding: 6px;
-      margin: 4px 0;
-    }
+.delete {
+  background: #c62828;
+  color: white;
+  margin-top: 8px;
+}
 
-    .add {
-      background: #000;
-      color: #fff;
-      text-align: center;
-      padding: 12px;
-      margin: 15px;
-      border-radius: 6px;
-    }
-  </style>
+.add {
+  background: black;
+  color: white;
+  margin-top: 20px;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="header">
-    <h1 id="shopName">Loading…</h1>
-    <p>Scan. View. Order on WhatsApp.</p>
-  </div>
+<div class="header">
+  <h1 id="shopName">Rat Furniture</h1>
+  <p>Scan. View. Order on WhatsApp.</p>
+</div>
 
-  <div class="catalog" id="catalog"></div>
-  <div id="addBtn" class="add" style="display:none;" onclick="addProduct()">+ Add Product</div>
+<div class="catalog" id="catalog"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc
-    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-    const PASSKEY = "29876104";
+const firebaseConfig = {
+  apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
+  authDomain: "qr-catalog-65293.firebaseapp.com",
+  projectId: "qr-catalog-65293",
+  storageBucket: "qr-catalog-65293.firebasestorage.app",
+  messagingSenderId: "268295648094",
+  appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
+};
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
-      authDomain: "qr-catalog-65293.firebaseapp.com",
-      projectId: "qr-catalog-65293",
-      storageBucket: "qr-catalog-65293.firebasestorage.app",
-      messagingSenderId: "268295648094",
-      appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
-    };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const ref = doc(db, "catalog", "main");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const ref = doc(db, "catalog", "main");
+let data;
+const passkey = "29876104";
 
-    let isAdmin = false;
-    let data = null;
+async function load() {
+  const snap = await getDoc(ref);
+  data = snap.data();
+  render();
+}
 
-    async function init() {
-      const snap = await getDoc(ref);
+function render() {
+  const c = document.getElementById("catalog");
+  c.innerHTML = "";
 
-      if (!snap.exists()) {
-        await setDoc(ref, {
-          passkey: PASSKEY,
-          shopName: "Rat Furniture",
-          products: [
-            {
-              name: "Chair",
-              price: "1999",
-              img: "https://picsum.photos/300?1"
-            }
-          ]
-        });
-      }
+  data.products.forEach((p, i) => {
+    c.innerHTML += `
+      <div class="card">
+        <input value="${p.name}" id="name${i}">
+        <input value="${p.price}" id="price${i}">
+        <input value="${p.img}" placeholder="Image link" id="img${i}">
+        <button class="btn save" onclick="save(${i})">Save</button>
+        <button class="btn delete" onclick="remove(${i})">Delete</button>
+      </div>
+    `;
+  });
 
-      data = (await getDoc(ref)).data();
-      render();
-    }
+  c.innerHTML += `
+    <button class="btn add" onclick="add()">+ Add Product</button>
+  `;
+}
 
-    function render() {
-      document.getElementById("shopName").innerText = data.shopName;
-      const c = document.getElementById("catalog");
-      c.innerHTML = "";
+window.save = async (i) => {
+  data.products[i] = {
+    name: document.getElementById("name" + i).value,
+    price: document.getElementById("price" + i).value,
+    img: document.getElementById("img" + i).value || "https://picsum.photos/300"
+  };
 
-      data.products.forEach((p, i) => {
-        c.innerHTML += `
-          <div class="product">
-            <img src="${p.img}">
-            ${
-              isAdmin
-                ? `
-                  <input value="${p.name}" onchange="edit(${i},'name',this.value)">
-                  <input value="${p.price}" onchange="edit(${i},'price',this.value)">
-                  <input value="${p.img}" onchange="edit(${i},'img',this.value)">
-                  <button class="admin" onclick="del(${i})">Delete</button>
-                `
-                : `
-                  <h3>${p.name}</h3>
-                  <p class="price">₹${p.price}</p>
-                  <a class="btn" href="https://wa.me/91XXXXXXXXXX">Order on WhatsApp</a>
-                `
-            }
-          </div>
-        `;
-      });
-    }
+  await setDoc(ref, { ...data, passkey });
+  alert("Saved");
+};
 
-    async function save() {
-      await setDoc(ref, data);
-      render();
-    }
+window.add = async () => {
+  data.products.push({
+    name: "New Product",
+    price: "0",
+    img: "https://picsum.photos/300"
+  });
+  await setDoc(ref, { ...data, passkey });
+  load();
+};
 
-    window.edit = (i, key, val) => {
-      data.products[i][key] = val;
-      save();
-    };
+window.remove = async (i) => {
+  data.products.splice(i, 1);
+  await setDoc(ref, { ...data, passkey });
+  load();
+};
 
-    window.del = (i) => {
-      data.products.splice(i, 1);
-      save();
-    };
-
-    window.addProduct = () => {
-      data.products.push({
-        name: "New Product",
-        price: "0",
-        img: "https://picsum.photos/300"
-      });
-      save();
-    };
-
-    const key = prompt("Enter owner passkey (Cancel for customer view)");
-    if (key === PASSKEY) {
-      isAdmin = true;
-      document.getElementById("addBtn").style.display = "block";
-    }
-
-    init();
-  </script>
+load();
+</script>
 
 </body>
 </html>
