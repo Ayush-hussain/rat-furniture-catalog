@@ -4,12 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Rat Furniture</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
   --primary: #111;
-  --accent: #25D366; /* WhatsApp Green */
+  --accent: #25D366;
   --bg: #f8f9fa;
   --card-bg: #ffffff;
   --text: #333;
@@ -20,10 +21,9 @@ body {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding-bottom: 80px; /* Space for footer */
+  padding-bottom: 90px;
 }
 
-/* Header */
 .header {
   background: var(--primary);
   color: white;
@@ -31,16 +31,11 @@ body {
   padding: 30px 20px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.header h1 { margin: 0; font-size: 2rem; letter-spacing: -1px; }
-.header p { margin: 10px 0 0; opacity: 0.8; font-size: 0.9rem; }
-
-/* Grid Layout */
 .container {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: auto;
   padding: 20px;
 }
 
@@ -50,49 +45,41 @@ body {
   gap: 15px;
 }
 
-/* Product Card */
 .card {
   background: var(--card-bg);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transition: transform 0.2s;
-  display: flex;
-  flex-direction: column;
-}
-
-.card:hover { transform: translateY(-3px); }
-
-.card-img-container {
-  width: 100%;
-  aspect-ratio: 1/1;
-  overflow: hidden;
-  background: #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 
 .card img {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1/1;
   object-fit: cover;
+  background: #eee;
 }
 
-.card-content { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
+.card-content {
+  padding: 12px;
+}
 
-.product-name { font-weight: 600; font-size: 1rem; margin-bottom: 4px; }
-.product-price { color: #666; font-size: 0.9rem; margin-bottom: 10px; flex-grow: 1;}
+.product-name {
+  font-weight: 600;
+}
 
-/* Buttons */
+.product-price {
+  color: #666;
+  margin-bottom: 10px;
+}
+
 .btn {
   width: 100%;
   padding: 10px;
-  border: none;
   border-radius: 8px;
-  font-weight: 600;
+  border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: opacity 0.2s;
+  font-weight: 600;
 }
-.btn:active { opacity: 0.8; }
 
 .btn-whatsapp {
   background: var(--accent);
@@ -102,28 +89,30 @@ body {
   text-align: center;
 }
 
-/* Admin Styles */
 .admin-controls {
-  border-top: 1px solid #eee;
-  padding-top: 10px;
   margin-top: 10px;
-  display: none; /* Hidden by default */
+  display: none;
 }
-.admin-mode .admin-controls { display: block; }
-.admin-mode .btn-whatsapp { display: none; } /* Hide buy button in admin mode */
 
-.input-group { margin-bottom: 8px; }
+.admin-mode .admin-controls {
+  display: block;
+}
+
+.admin-mode .btn-whatsapp {
+  display: none;
+}
+
 input {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ddd;
+  margin-bottom: 6px;
   border-radius: 6px;
-  box-sizing: border-box;
-  font-family: inherit;
+  border: 1px solid #ddd;
 }
 
-.btn-save { background: var(--primary); color: white; margin-bottom: 5px; }
-.btn-delete { background: #ff4444; color: white; }
+.btn-save { background: #111; color: white; }
+.btn-delete { background: #e53935; color: white; }
+
 .btn-add {
   position: fixed;
   bottom: 20px;
@@ -131,202 +120,146 @@ input {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #111;
   color: white;
-  font-size: 30px;
+  font-size: 28px;
   border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  display: none;
-  cursor: pointer;
-  z-index: 100;
 }
-.admin-mode .btn-add { display: block; }
 
-/* Footer / Admin Toggle */
 .footer-bar {
   text-align: center;
-  margin-top: 40px;
-  color: #ccc;
+  margin: 30px 0;
+  color: #aaa;
   cursor: pointer;
 }
-
-.loading { text-align: center; padding: 40px; color: #888; }
-
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <h1 id="shopName">Rat Furniture</h1>
+  <h1>Rat Furniture</h1>
   <p>Scan. View. Order on WhatsApp.</p>
 </div>
 
 <div class="container">
   <div id="catalog" class="catalog-grid">
-    <div class="loading">Loading catalog...</div>
+    Loading…
   </div>
 </div>
 
-<button class="btn btn-add" onclick="addProduct()">+</button>
+<button class="btn-add" onclick="addProduct()">+</button>
 
-<div class="footer-bar" onclick="toggleAdmin()">
-  <span id="lockIcon">🔒 Admin Access</span>
-</div>
+<div class="footer-bar" onclick="toggleAdmin()">🔒 Admin Access</div>
 
 <script type="module">
-  // Using a stable version of Firebase (v10)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
-    authDomain: "qr-catalog-65293.firebaseapp.com",
-    projectId: "qr-catalog-65293",
-    storageBucket: "qr-catalog-65293.firebasestorage.app",
-    messagingSenderId: "268295648094",
-    appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
+  authDomain: "qr-catalog-65293.firebaseapp.com",
+  projectId: "qr-catalog-65293",
+  storageBucket: "qr-catalog-65293.firebasestorage.app",
+  messagingSenderId: "268295648094",
+  appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const docRef = doc(db, "catalog", "main");
-  
-  // App State
-  let products = [];
-  let isAdmin = false;
-  const PASSKEY = "29876104";
+const PASSKEY = "29876104";
 
-  // Initial Load
-  async function init() {
-    // Real-time listener: updates automatically when data changes
-    onSnapshot(docRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        products = data.products || [];
-        render();
-      } else {
-        // Create initial empty database if it doesn't exist
-        initializeDB();
-      }
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const ref = doc(db, "catalog", "main");
+
+let products = [];
+let isAdmin = false;
+
+onSnapshot(ref, snap => {
+  if (snap.exists()) {
+    products = snap.data().products || [];
+    render();
+  } else {
+    setDoc(ref, {
+      passkey: PASSKEY,
+      products: []
     });
   }
+});
 
-  async function initializeDB() {
-    products = [
-      { name: "Sample Chair", price: "250", img: "https://picsum.photos/300/300" }
-    ];
-    await setDoc(docRef, { products });
-  }
+function render() {
+  document.body.classList.toggle("admin-mode", isAdmin);
+  const c = document.getElementById("catalog");
+  c.innerHTML = "";
 
-  // Render Function
-  function render() {
-    const container = document.getElementById("catalog");
-    container.innerHTML = "";
+  products.forEach((p, i) => {
+    c.innerHTML += `
+      <div class="card">
+        <img src="${p.img}" onerror="this.src='https://placehold.co/300x300?text=No+Image'">
+        <div class="card-content">
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">₹${p.price}</div>
+          <a class="btn btn-whatsapp" href="https://wa.me/?text=Interested in ${encodeURIComponent(p.name)}">Order</a>
 
-    // Toggle body class for CSS styling
-    document.body.classList.toggle('admin-mode', isAdmin);
-    document.getElementById("lockIcon").innerText = isAdmin ? "🔓 Admin Mode (Tap to Exit)" : "🔒 Admin Access";
-
-    if (products.length === 0) {
-      container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No products found.</div>';
-      return;
-    }
-
-    products.forEach((p, index) => {
-      const html = `
-        <div class="card">
-          <div class="card-img-container">
-            <img src="${p.img}" alt="${p.name}" onerror="this.src='https://placehold.co/300x300?text=No+Image'">
-          </div>
-          
-          <div class="card-content">
-            <div class="view-mode" ${isAdmin ? 'style="display:none"' : ''}>
-              <div class="product-name">${p.name}</div>
-              <div class="product-price">$${p.price}</div>
-              <a href="https://wa.me/?text=Hi, I am interested in ${encodeURIComponent(p.name)}" target="_blank" class="btn btn-whatsapp">
-                Order via WhatsApp
-              </a>
-            </div>
-
-            <div class="admin-controls">
-              <div class="input-group">
-                <input value="${p.name}" id="name-${index}" placeholder="Name">
-              </div>
-              <div class="input-group">
-                <input value="${p.price}" id="price-${index}" placeholder="Price">
-              </div>
-              <div class="input-group">
-                <input value="${p.img}" id="img-${index}" placeholder="Image URL">
-              </div>
-              <button class="btn btn-save" onclick="saveProduct(${index})">Save Changes</button>
-              <button class="btn btn-delete" onclick="deleteProduct(${index})">Delete</button>
-            </div>
+          <div class="admin-controls">
+            <input id="n${i}" value="${p.name}">
+            <input id="p${i}" value="${p.price}">
+            <input id="i${i}" value="${p.img}" placeholder="Image URL">
+            <button class="btn btn-save" onclick="save(${i})">Save</button>
+            <button class="btn btn-delete" onclick="remove(${i})">Delete</button>
           </div>
         </div>
-      `;
-      container.innerHTML += html;
-    });
+      </div>
+    `;
+  });
+}
+
+window.toggleAdmin = () => {
+  if (isAdmin) {
+    isAdmin = false;
+    render();
+    return;
   }
-
-  // --- Actions ---
-
-  window.toggleAdmin = () => {
-    if (isAdmin) {
-      isAdmin = false;
-      render();
-    } else {
-      const input = prompt("Enter Admin Passkey:");
-      if (input === PASSKEY) {
-        isAdmin = true;
-        render();
-      } else if (input !== null) {
-        alert("Incorrect passkey");
-      }
-    }
-  };
-
-  window.addProduct = async () => {
-    const newProduct = {
-      name: "New Item",
-      price: "0",
-      img: "https://picsum.photos/300/300?random=" + Math.random()
-    };
-    products.push(newProduct);
-    await syncDB();
-    // Scroll to bottom
-    setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
-  };
-
-  window.saveProduct = async (index) => {
-    products[index] = {
-      name: document.getElementById(`name-${index}`).value,
-      price: document.getElementById(`price-${index}`).value,
-      img: document.getElementById(`img-${index}`).value
-    };
-    await syncDB();
-    alert("Saved!");
-  };
-
-  window.deleteProduct = async (index) => {
-    if(confirm("Are you sure you want to delete this item?")) {
-      products.splice(index, 1);
-      await syncDB();
-    }
-  };
-
-  async function syncDB() {
-    try {
-      await setDoc(docRef, { products }, { merge: true });
-    } catch (e) {
-      alert("Error saving: " + e.message);
-      console.error(e);
-    }
+  const k = prompt("Enter admin passkey:");
+  if (k === PASSKEY) {
+    isAdmin = true;
+    render();
+  } else if (k) {
+    alert("Wrong passkey");
   }
+};
 
-  // Start
-  init();
+window.addProduct = async () => {
+  products.push({
+    name: "New Product",
+    price: "0",
+    img: "https://placehold.co/300x300?text=Image"
+  });
+  await sync();
+};
 
+window.save = async i => {
+  products[i] = {
+    name: document.getElementById(`n${i}`).value,
+    price: document.getElementById(`p${i}`).value,
+    img: document.getElementById(`i${i}`).value
+  };
+  await sync();
+  alert("Saved");
+};
+
+window.remove = async i => {
+  if (confirm("Delete this product?")) {
+    products.splice(i, 1);
+    await sync();
+  }
+};
+
+async function sync() {
+  await setDoc(ref, {
+    passkey: PASSKEY,
+    products
+  });
+}
 </script>
 
 </body>
