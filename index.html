@@ -8,15 +8,39 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       background: #f2f2f2;
     }
 
     .header {
       background: #111;
-      color: white;
+      color: #fff;
       text-align: center;
       padding: 20px;
+    }
+
+    .admin-bar {
+      background: #222;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .admin-bar input {
+      padding: 6px;
+      margin: 5px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .admin-bar button {
+      padding: 8px 12px;
+      margin-top: 5px;
+      background: #25D366;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 4px;
     }
 
     .catalog {
@@ -27,16 +51,22 @@
     }
 
     .product {
-      background: white;
+      background: #fff;
       border-radius: 8px;
       padding: 10px;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
     }
 
     .product img {
       width: 100%;
       border-radius: 6px;
+    }
+
+    .product input {
+      width: 95%;
+      margin: 4px 0;
+      padding: 5px;
     }
 
     .price {
@@ -51,6 +81,12 @@
       text-decoration: none;
       padding: 10px;
       border-radius: 5px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    .danger {
+      background: red;
       margin-top: 6px;
     }
   </style>
@@ -63,6 +99,7 @@
     <p>Scan. View. Order on WhatsApp.</p>
   </div>
 
+  <div id="adminBar"></div>
   <div class="catalog" id="catalog"></div>
 
   <script type="module">
@@ -85,53 +122,117 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const catalogRef = doc(db, "catalog", "main");
+
+    let catalogData = null;
+    let isAdmin = false;
+    const PASSKEY = "29876104";
 
     async function loadCatalog() {
       const snap = await getDoc(catalogRef);
 
       if (!snap.exists()) {
         await setDoc(catalogRef, {
-          passkey: "29876104",
+          passkey: PASSKEY,
           shopName: "Rat Furniture",
-          products: [
-            {
-              name: "Sofa Set",
-              price: "19999",
-              img: "https://picsum.photos/400?1"
-            },
-            {
-              name: "Wooden Bed",
-              price: "24999",
-              img: "https://picsum.photos/400?2"
-            }
-          ]
+          products: []
         });
       }
 
-      const data = (await getDoc(catalogRef)).data();
-      renderCatalog(data);
+      catalogData = (await getDoc(catalogRef)).data();
+      render();
     }
 
-    function renderCatalog(data) {
-      document.getElementById("shopName").innerText = data.shopName;
+    function render() {
+      document.getElementById("shopName").innerText = catalogData.shopName;
+
+      const adminBar = document.getElementById("adminBar");
+      adminBar.innerHTML = "";
+
+      if (!isAdmin) {
+        adminBar.innerHTML = `
+          <div class="admin-bar">
+            <button onclick="login()">Owner Login</button>
+          </div>
+        `;
+      } else {
+        adminBar.innerHTML = `
+          <div class="admin-bar">
+            <input value="${catalogData.shopName}" 
+              onchange="updateShopName(this.value)">
+            <button onclick="addProduct()">+ Add Product</button>
+          </div>
+        `;
+      }
+
       const catalog = document.getElementById("catalog");
       catalog.innerHTML = "";
 
-      data.products.forEach(p => {
-        catalog.innerHTML += `
-          <div class="product">
-            <img src="${p.img}">
-            <h3>${p.name}</h3>
-            <p class="price">₹${p.price}</p>
-            <a class="btn" href="https://wa.me/91XXXXXXXXXX">
-              Order on WhatsApp
-            </a>
-          </div>
-        `;
+      catalogData.products.forEach((p, i) => {
+        if (isAdmin) {
+          catalog.innerHTML += `
+            <div class="product">
+              <input value="${p.name}" onchange="updateProduct(${i}, 'name', this.value)">
+              <input value="${p.price}" onchange="updateProduct(${i}, 'price', this.value)">
+              <input value="${p.img}" onchange="updateProduct(${i}, 'img', this.value)">
+              <img src="${p.img}">
+              <button class="btn danger" onclick="deleteProduct(${i})">Delete</button>
+            </div>
+          `;
+        } else {
+          catalog.innerHTML += `
+            <div class="product">
+              <img src="${p.img}">
+              <h3>${p.name}</h3>
+              <p class="price">₹${p.price}</p>
+              <a class="btn" href="https://wa.me/91XXXXXXXXXX">Order on WhatsApp</a>
+            </div>
+          `;
+        }
       });
     }
+
+    async function save() {
+      await setDoc(catalogRef, {
+        ...catalogData,
+        passkey: PASSKEY
+      });
+      loadCatalog();
+    }
+
+    window.login = () => {
+      const key = prompt("Enter owner passkey");
+      if (key === PASSKEY) {
+        isAdmin = true;
+        render();
+      } else {
+        alert("Wrong passkey");
+      }
+    };
+
+    window.updateShopName = async (val) => {
+      catalogData.shopName = val;
+      await save();
+    };
+
+    window.addProduct = async () => {
+      catalogData.products.push({
+        name: "New Product",
+        price: "0",
+        img: "https://picsum.photos/300"
+      });
+      await save();
+    };
+
+    window.updateProduct = async (i, field, val) => {
+      catalogData.products[i][field] = val;
+      await save();
+    };
+
+    window.deleteProduct = async (i) => {
+      catalogData.products.splice(i, 1);
+      await save();
+    };
 
     loadCatalog();
   </script>
