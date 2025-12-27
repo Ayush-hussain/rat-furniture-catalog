@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QR Catalogue</title>
+  <title>Rat Furniture</title>
 
   <style>
     body {
@@ -76,7 +76,7 @@
       setDoc
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-    // 🔐 YOUR FIREBASE CONFIG
+    // 🔐 FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
       authDomain: "qr-catalog-65293.firebaseapp.com",
@@ -90,33 +90,40 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Reference to catalogue document
+    // Firestore document reference
     const catalogRef = doc(db, "catalog", "main");
 
     async function loadCatalog() {
-      const snap = await getDoc(catalogRef);
+      try {
+        const snap = await getDoc(catalogRef);
 
-      // If catalog does NOT exist, create it once
-      if (!snap.exists()) {
-        await setDoc(catalogRef, {
-          shopName: "rat furniture",
-          products: [
-            {
-              name: "Product 1",
-              price: "499",
-              img: "https://picsum.photos/300?1"
-            },
-            {
-              name: "Product 2",
-              price: "799",
-              img: "https://picsum.photos/300?2"
-            }
-          ]
-        });
+        // If document does not exist, create it (WITH passkey)
+        if (!snap.exists()) {
+          await setDoc(catalogRef, {
+            passkey: "29876104",
+            shopName: "Rat Furniture",
+            products: [
+              {
+                name: "Wooden Chair",
+                price: "499",
+                img: "https://picsum.photos/300?1"
+              },
+              {
+                name: "Dining Table",
+                price: "799",
+                img: "https://picsum.photos/300?2"
+              }
+            ]
+          });
+        }
+
+        const data = (await getDoc(catalogRef)).data();
+        renderCatalog(data);
+
+      } catch (err) {
+        console.error("Error loading catalog:", err);
+        document.getElementById("shopName").innerText = "Error loading catalog";
       }
-
-      const data = (await getDoc(catalogRef)).data();
-      renderCatalog(data);
     }
 
     function renderCatalog(data) {
@@ -139,7 +146,7 @@
       });
     }
 
-    // Load data from cloud
+    // Load catalog from cloud
     loadCatalog();
   </script>
 
