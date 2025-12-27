@@ -1,137 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rat Furniture</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rat Furniture Catalogue</title>
 
-<style>
-body{margin:0;font-family:Arial;background:#f2f2f2}
-.header{background:#111;color:#fff;text-align:center;padding:20px}
-.catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;padding:15px}
-.product{background:#fff;border-radius:8px;padding:10px;text-align:center}
-.product img{width:100%;border-radius:6px}
-.btn{background:#25D366;color:#fff;padding:10px;text-decoration:none;border-radius:5px;display:block;margin-top:6px}
-.admin{background:#e53935;color:#fff;border:none;padding:6px;margin-top:5px}
-input{width:100%;margin:4px 0;padding:6px}
-</style>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+    }
+
+    .header {
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .product {
+      background: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .product img {
+      width: 100%;
+      border-radius: 6px;
+    }
+
+    .price {
+      font-weight: bold;
+      margin: 6px 0;
+    }
+
+    .btn {
+      display: block;
+      background: #25D366;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 6px;
+      font-weight: bold;
+    }
+
+    .admin {
+      background: #c62828;
+      color: #fff;
+      border: none;
+      padding: 6px;
+      width: 100%;
+      margin-top: 6px;
+      border-radius: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 6px;
+      margin: 4px 0;
+    }
+
+    .add {
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 12px;
+      margin: 15px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h2 id="shopName">Loading...</h2>
-  <p>Scan. View. Order on WhatsApp.</p>
-</div>
+  <div class="header">
+    <h1 id="shopName">Loading…</h1>
+    <p>Scan. View. Order on WhatsApp.</p>
+  </div>
 
-<div class="catalog" id="catalog"></div>
+  <div class="catalog" id="catalog"></div>
+  <div id="addBtn" class="add" style="display:none;" onclick="addProduct()">+ Add Product</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
-  authDomain: "qr-catalog-65293.firebaseapp.com",
-  projectId: "qr-catalog-65293",
-  storageBucket: "qr-catalog-65293.firebasestorage.app",
-  messagingSenderId: "268295648094",
-  appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
-};
+    const PASSKEY = "29876104";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-const refDoc = doc(db,"catalog","main");
+    const firebaseConfig = {
+      apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
+      authDomain: "qr-catalog-65293.firebaseapp.com",
+      projectId: "qr-catalog-65293",
+      storageBucket: "qr-catalog-65293.firebasestorage.app",
+      messagingSenderId: "268295648094",
+      appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
+    };
 
-let isAdmin = false;
-let data = null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const ref = doc(db, "catalog", "main");
 
-async function load(){
-  const snap = await getDoc(refDoc);
-  if(!snap.exists()){
-    await setDoc(refDoc,{
-      passkey:"29876104",
-      shopName:"Rat Furniture",
-      products:[]
-    });
-  }
-  data = (await getDoc(refDoc)).data();
-  render();
-}
+    let isAdmin = false;
+    let data = null;
 
-function login(){
-  const p = prompt("Enter passkey");
-  if(p==="29876104"){
-    isAdmin=true;
-    render();
-  }
-}
+    async function init() {
+      const snap = await getDoc(ref);
 
-async function uploadImage(file){
-  const storageRef = ref(storage, `catalog/${Date.now()}_${file.name}`);
-  await uploadBytes(storageRef,file);
-  return await getDownloadURL(storageRef);
-}
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          passkey: PASSKEY,
+          shopName: "Rat Furniture",
+          products: [
+            {
+              name: "Chair",
+              price: "1999",
+              img: "https://picsum.photos/300?1"
+            }
+          ]
+        });
+      }
 
-function render(){
-  document.getElementById("shopName").innerText=data.shopName;
-  const c=document.getElementById("catalog");
-  c.innerHTML="";
+      data = (await getDoc(ref)).data();
+      render();
+    }
 
-  data.products.forEach((p,i)=>{
-    c.innerHTML+=`
-    <div class="product">
-      <img src="${p.img}">
-      ${isAdmin?`
-        <input value="${p.name}" onchange="update(${i},'name',this.value)">
-        <input value="${p.price}" onchange="update(${i},'price',this.value)">
-        <input type="file" onchange="imgUpload(event,${i})">
-        <button class="admin" onclick="remove(${i})">Delete</button>
-      `:`
-        <h3>${p.name}</h3>
-        <p>₹${p.price}</p>
-        <a class="btn" href="https://wa.me/91XXXXXXXXXX">Order on WhatsApp</a>
-      `}
-    </div>`;
-  });
+    function render() {
+      document.getElementById("shopName").innerText = data.shopName;
+      const c = document.getElementById("catalog");
+      c.innerHTML = "";
 
-  if(isAdmin){
-    c.innerHTML+=`
-    <div class="product">
-      <button class="btn" onclick="add()">+ Add Product</button>
-    </div>`;
-  }
-}
+      data.products.forEach((p, i) => {
+        c.innerHTML += `
+          <div class="product">
+            <img src="${p.img}">
+            ${
+              isAdmin
+                ? `
+                  <input value="${p.name}" onchange="edit(${i},'name',this.value)">
+                  <input value="${p.price}" onchange="edit(${i},'price',this.value)">
+                  <input value="${p.img}" onchange="edit(${i},'img',this.value)">
+                  <button class="admin" onclick="del(${i})">Delete</button>
+                `
+                : `
+                  <h3>${p.name}</h3>
+                  <p class="price">₹${p.price}</p>
+                  <a class="btn" href="https://wa.me/91XXXXXXXXXX">Order on WhatsApp</a>
+                `
+            }
+          </div>
+        `;
+      });
+    }
 
-window.imgUpload=async(e,i)=>{
-  const url=await uploadImage(e.target.files[0]);
-  data.products[i].img=url;
-  await setDoc(refDoc,data);
-  load();
-}
+    async function save() {
+      await setDoc(ref, data);
+      render();
+    }
 
-window.update=async(i,k,v)=>{
-  data.products[i][k]=v;
-  await setDoc(refDoc,data);
-}
+    window.edit = (i, key, val) => {
+      data.products[i][key] = val;
+      save();
+    };
 
-window.add=async()=>{
-  data.products.push({name:"New",price:"0",img:"https://via.placeholder.com/300"});
-  await setDoc(refDoc,data);
-  load();
-}
+    window.del = (i) => {
+      data.products.splice(i, 1);
+      save();
+    };
 
-window.remove=async(i)=>{
-  data.products.splice(i,1);
-  await setDoc(refDoc,data);
-  load();
-}
+    window.addProduct = () => {
+      data.products.push({
+        name: "New Product",
+        price: "0",
+        img: "https://picsum.photos/300"
+      });
+      save();
+    };
 
-login();
-load();
-</script>
+    const key = prompt("Enter owner passkey (Cancel for customer view)");
+    if (key === PASSKEY) {
+      isAdmin = true;
+      document.getElementById("addBtn").style.display = "block";
+    }
+
+    init();
+  </script>
 
 </body>
 </html>
