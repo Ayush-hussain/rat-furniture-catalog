@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Catalogue</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f2f2f2;
+    }
+
+    .header {
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .product {
+      background: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .product img {
+      width: 100%;
+      border-radius: 6px;
+    }
+
+    .price {
+      font-weight: bold;
+      margin: 6px 0;
+    }
+
+    .btn {
+      display: block;
+      background: #25D366;
+      color: white;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1 id="shopName">Loading...</h1>
+    <p>Scan. View. Order on WhatsApp.</p>
+  </div>
+
+  <div class="catalog" id="catalog"></div>
+
+  <!-- Firebase + Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+    // 🔐 YOUR FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyDvWo9_TNzeHDMaWYMc2AuTHxC6vAcvF18",
+      authDomain: "qr-catalog-65293.firebaseapp.com",
+      projectId: "qr-catalog-65293",
+      storageBucket: "qr-catalog-65293.firebasestorage.app",
+      messagingSenderId: "268295648094",
+      appId: "1:268295648094:web:75d6b5eb6080e79aee95cf"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Reference to catalogue document
+    const catalogRef = doc(db, "catalog", "main");
+
+    async function loadCatalog() {
+      const snap = await getDoc(catalogRef);
+
+      // If catalog does NOT exist, create it once
+      if (!snap.exists()) {
+        await setDoc(catalogRef, {
+          shopName: "rat furniture",
+          products: [
+            {
+              name: "Product 1",
+              price: "499",
+              img: "https://picsum.photos/300?1"
+            },
+            {
+              name: "Product 2",
+              price: "799",
+              img: "https://picsum.photos/300?2"
+            }
+          ]
+        });
+      }
+
+      const data = (await getDoc(catalogRef)).data();
+      renderCatalog(data);
+    }
+
+    function renderCatalog(data) {
+      document.getElementById("shopName").innerText = data.shopName;
+
+      const catalogDiv = document.getElementById("catalog");
+      catalogDiv.innerHTML = "";
+
+      data.products.forEach(p => {
+        catalogDiv.innerHTML += `
+          <div class="product">
+            <img src="${p.img}">
+            <h3>${p.name}</h3>
+            <p class="price">₹${p.price}</p>
+            <a class="btn" href="https://wa.me/91XXXXXXXXXX">
+              Order on WhatsApp
+            </a>
+          </div>
+        `;
+      });
+    }
+
+    // Load data from cloud
+    loadCatalog();
+  </script>
+
+</body>
+</html>
